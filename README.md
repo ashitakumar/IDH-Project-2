@@ -7,13 +7,10 @@ output: html_document
 
 ![Ashoka University logo](https://www.ashoka.edu.in/admin_assets/global/images/logo/logo-ashoka.png)
 
-{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
 
 ## Title 
 
-Saga of the MPF Corpus
+> Saga of the MPF Corpus
 
 ## Introduction + Research Question 
 
@@ -33,160 +30,8 @@ We created a corpus where we picked an equal number of works by three categories
 
 
 ## Sentiment Analysis 
+Jocker establishes some of these topics as more ‘masculine’ than others. We tried to find a similar trend in our corpus. We used words such as ‘fashion’, ‘rivalry’, ‘alcohol’, ‘nature’, ‘weapons’, and ‘money’ and saw the frequency of these themes present in all 3 authors.
 
- Jocker establishes some of these topics as more ‘masculine’ than others. We tried to find a similar trend in our corpus. We used words such as ‘fashion’, ‘rivalry’, ‘alcohol’, ‘nature’, ‘weapons’, and ‘money’ and saw the frequency of these themes present in all 3 authors.
----
-title: "SentimentAnalysisProject2"
-author: "Krisha Vaishnav"
-date: "10/7/2021"
-output: html_document
----
-
-{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
-
-
-{r}
-library(stringr)
-library(dplyr)
-library(tidyr)
-library(readr)
-library(stringi)
-library(textclean)
-library(gutenbergr)
-library(tidytext)
-library(tidyverse)
-
-
-{r}
-clean_entities <- read.csv("entities_cleaned.csv")
- 
-
-{r unnest}
-entities_unnest <- clean_entities %>%
-  unnest_tokens(word, sentence)
- 
-
-{r remove_stopwords}
-entities_unnest <- entities_unnest %>%
-  anti_join(stop_words)
- 
-
-{r}
-male_authors <- c("Dostoyevsky, Fyodor", "Hugo, Victor", "Dickens, Charles", "Melville, Herman")
-male_table <- clean_entities[0,]
-
-female_authors <- c("Gaskell, Elizabeth Cleghorn", "Woolf, Virginia", "Craik, Dinah Maria Mulock", "Austen, Jane")
-female_table <- clean_entities[0,]
-
-pen_authors <- c("Sand, George", "Eliot, George", "Alcott, Louisa May", "Brontë, Charlotte")
-pen_table <- clean_entities[0,]
-
-for(row in 1:nrow(clean_entities)) {
-  author_name <- clean_entities[row, "author"]
-  male_match_result <- match(author_name, male_authors)
-  female_match_result <- match(author_name, female_authors)
-  pen_match_result <- match(author_name, pen_authors)
-  if (!is.na(male_match_result)) {
-    male_table[nrow(male_table) + 1,] = clean_entities[row, ]
-  } else if (!is.na(female_match_result)) {
-      female_table[nrow(female_table) + 1,] = clean_entities[row, ]
-    } else {
-        pen_table[nrow(pen_table) + 1,] = clean_entities[row, ]
-    }
-}
-print("done")
-
-
-{r unnest}
-male_unnest <- male_table %>%
-  unnest_tokens(word, sentence)
-
-female_unnest <- female_table %>%
-  unnest_tokens(word, sentence)
-
-pen_unnest <- pen_table %>%
-  unnest_tokens(word, sentence)
- 
-
-{r remove_stopwords}
-male_unnest <- male_unnest %>%
-  anti_join(stop_words)
-
-female_unnest <- female_unnest %>%
-  anti_join(stop_words)
-
-pen_unnest <- pen_unnest %>%
-  anti_join(stop_words)
- 
-
-{r adding_sentiment}
-femalefashion_words <- c("dress","gown", "silk", "lace", "muslin", "hair", "satin", "shawl", "robe", "scarf", "folds", "constume", "colour", "attire", "gold", "fashion")
-
-fashion_words_df <- data_frame(word = femalefashion_words, fashion = TRUE)
-
-rivalry_words <- c("enemy", "men", "troop", "cavalry")
-
-rivalry_df <- data_frame(word = rivalry_words, rivalry = TRUE)
-
-alcohol_words <- c("alcohol","beer", "whiskey", "drunk", "tipsy")
-
-alcohol_words_df <- data_frame(word = alcohol_words, alcohol = TRUE)
-
-nature_words <- c("flower","beauty", "nature", "garden", "grass", "green", "petal")
-
-nature_words_df <- data_frame(word = nature_words, nature = TRUE)
-
-weapons_words <- c("fire","gun", "blood", "bomb", "bullet", "shoot", "knife", "kill", "explosive", "murder")
-
-weapons_words_df <- data_frame(word = weapons_words, weapons = TRUE)
-
-money_words <- c("money","lend", "pay", "donate", "steal", "donate", "cash", "income", "spend", "earn")
-
-money_words_df <- data_frame(word = money_words, money = TRUE)
-
-
-{r tagged_words}
-male_tagged <- male_unnest %>% 
-                                left_join(fashion_words_df) %>% 
-                                left_join(rivalry_df) %>%
-                                left_join(alcohol_words_df) %>% 
-                                left_join(nature_words_df) %>% 
-                                left_join(weapons_words_df) %>% 
-                                left_join(money_words_df)
-
-male_table <- male_tagged %>% 
-                      count(fashion, rivalry, alcohol, nature, weapons, money) %>% 
-                      mutate (percent = n/sum(n)*100)
-
-
-{r tagged_words}
-female_tagged <- female_unnest %>% 
-                                left_join(fashion_words_df) %>% 
-                                left_join(rivalry_df) %>%
-                                left_join(alcohol_words_df) %>% 
-                                left_join(nature_words_df) %>% 
-                                left_join(weapons_words_df) %>% 
-                                left_join(money_words_df)
-
-female_table <- female_tagged %>% 
-                      count(fashion, rivalry, alcohol, nature, weapons, money) %>% 
-                      mutate (percent = n/sum(n)*100)
-
-
-{r tagged_words}
-pen_tagged <- pen_unnest %>% 
-                                left_join(fashion_words_df) %>% 
-                                left_join(rivalry_df) %>%
-                                left_join(alcohol_words_df) %>% 
-                                left_join(nature_words_df) %>% 
-                                left_join(weapons_words_df) %>% 
-                                left_join(money_words_df)
-
-pen_table <- pen_tagged %>% 
-                      count(fashion, rivalry, alcohol, nature, weapons, money) %>% 
-                      mutate (percent = n/sum(n)*100)
                       
 Observing these tables, we found that:
 For the theme of ‘money’, male authors and pen authors wrote at a similar frequency which was comparatively higher than female authors.
